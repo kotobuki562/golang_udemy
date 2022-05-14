@@ -62,7 +62,7 @@ Go の場合は、build して出来上がったバイナリをそのまま配�
 
 # 変数定義
 
-```
+```main.go
 package main
 
 import (
@@ -138,7 +138,7 @@ func main() {
 
 # 数値型(Int)
 
-```
+```main.go
 package main
 
 import "fmt"
@@ -172,7 +172,7 @@ func main() {
 
 # 浮動小数型(float)
 
-```
+```main.go
 package main
 
 import "fmt"
@@ -230,7 +230,7 @@ var c64 complex64 = -5 + 12i //complex型
 
 # 論理型(boolean)
 
-```
+```main.go
 package main
 
 import "fmt"
@@ -243,7 +243,7 @@ func main() {
 
 # 文字列型(string)
 
-```
+```main.go
 package main
 
 import (
@@ -284,7 +284,7 @@ func main() {
 
 # バイト型(byte)
 
-```
+```main.go
 package main
 
 import (
@@ -319,7 +319,7 @@ Go の配列型は要素数を変更できない。
 
 スライス型　＝　要素数を変更可能。
 
-```
+```main.go
 package main
 
 import (
@@ -376,7 +376,7 @@ func main() {
 
 全ての型との互換性を持っている
 
-```
+```main.go
 package main
 
 import (
