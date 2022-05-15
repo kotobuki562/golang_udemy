@@ -409,3 +409,388 @@ func main() {
 	// interfaceは型の互換性はあるが他の方と併用して使えない
 }
 ```
+
+# 型変換
+
+```main.go
+package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+// 型変換
+
+func main() {
+	/*
+	var i int = 1
+	fl64 := float64(i)
+	fmt.Println(fl64)
+	fmt.Printf("i = %T\n", i)
+	fmt.Printf("fl64 = %T\n", fl64)
+
+	i2 := int(fl64)
+	fmt.Printf("i2 = %T\n", i2)
+
+	fl := 10.5
+	i3 := int(fl)
+	fmt.Printf("i3 = %T\n", i3)
+	fmt.Println(i3)
+	*/
+
+
+	var s string = "100"
+	fmt.Printf("s = %T\n", s)
+	// strconv.Atoiで文字列からint型に変換
+	// 2つ返り値があり、1つ目は変換に成功したかどうか、2つ目はエラーしたかどうか
+	// _にすることで省略する
+	i,_ := strconv.Atoi("A")
+
+
+	/*
+	if err != nil {
+		fmt.Println(err)
+		// strconv.Atoi: parsing "A": invalid syntax
+	}
+	*/
+
+
+	fmt.Println(i)
+	fmt.Printf("i = %T\n", i)
+
+	var i2 int = 200
+	s2 := strconv.Itoa(i2)
+	fmt.Println(s2)
+	fmt.Printf("s2 = %T\n", s2)
+
+
+	// byte型変換
+	var h string = "Hello world"
+	b := []byte(h)
+	fmt.Println(b)
+	// [72 101 108 108 111 32 119 111 114 108 100]
+
+	h2 := string(b)
+	fmt.Println(h2)
+	// Hello world
+}
+```
+
+# 定数(グローバル変数)
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// 定数(グローバルで書くことが多い)
+// 頭文字を大文字にすることでグローバル変数として設定してpackageとして呼び出せる
+
+
+const Pi = 3.14
+
+const (
+	URL = "http://example.com"
+	SiteName = "Example"
+)
+
+const (
+	A = 1
+	B
+	C
+	D = "A"
+	E
+	F
+)
+
+const (
+	c0 = iota
+	c1
+	c2
+)
+
+// int型の最大値は「9223372036854775807」
+// var Big int =	9223372036854775807 + 1
+const Big = 9223372036854775807 + 1
+
+func main() {
+	fmt.Println(Pi)
+	/*
+		Pi = 3
+	fmt.Println(Pi)
+	*/
+
+	fmt.Println(URL, SiteName)
+	// http://example.com Example
+
+	// 値を省略して定義することもできる
+	fmt.Println(A, B, C, D, E, F)
+	// 1 1 1 A A A
+
+	fmt.Println(Big - 1)
+	// var: constant 9223372036854775808 overflows int
+	// const: 9223372036854775807
+
+	// iotaは連続する値を自動的に返す
+	fmt.Println(c0, c1, c2)
+	// 0 1 2
+}
+```
+
+# 算術演算子
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// 算術演算子
+
+func main() {
+	fmt.Println(1 + 2)
+	// 3
+	fmt.Println(5 - 1)
+	// 4
+
+	fmt.Println(2 * 3)
+	// 6
+
+	fmt.Println(60 / 3)
+	// 20
+
+	fmt.Println(9 % 4)
+	// 1
+
+	fmt.Println("ABC" + "DEF")
+	// ABCDEF
+
+	n := 0
+	n += 4 // n = n + 4
+	fmt.Println(n)
+	// 4
+	n++ // n = n + 1
+	fmt.Println(n)
+	// 5
+
+	n-- // n = n - 1
+	fmt.Println(n)
+	// 4
+
+	s := "ABC"
+	s += "DEF" // s = s + "DEF"
+	fmt.Println(s)
+	// ABCDEF
+}
+```
+
+# 比較演算子
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// 比較演算子
+
+func main() {
+	fmt.Println(1 == 1)
+	// true
+
+	fmt.Println(1 == 2)
+	// false
+
+	fmt.Println(4 <= 8)
+	// true
+
+	fmt.Println(4 >= 8)
+	// false
+
+	fmt.Println(4 < 8)
+	// true
+
+	fmt.Println(true == false)
+	// false
+
+	fmt.Println(true != false)
+	// true
+}
+```
+
+# 論理演算子
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// 論理演算子
+
+func main() {
+	fmt.Println(true && false == true)
+	// false
+
+	fmt.Println(true && true == true)
+	// true
+
+	// ||はどちらかがteureであればtrue
+	fmt.Println(true || false == true)
+	// true
+
+	fmt.Println(false || false == true)
+	// false
+
+	fmt.Println(!true)
+	// false
+
+	fmt.Println(!false)
+	// true
+
+	fmt.Println(!!true)
+	// true
+
+	fmt.Println(!!false)
+	// false
+}
+```
+
+# 関数
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// 関数
+
+// 第一引数にint型のx、第二引数にint型yを受け取りint型を返り値
+// 引数が同じ型なら、型推論で型推論できる
+func Plus(x, y int) int {
+	return x + y
+}
+
+func Div(x, y int) (int, int) {
+	q := x / y
+	r := x % y
+	return q,r
+}
+
+// resultを関数内で使ってreturnしているので省略できる
+func Duble(price int) (result int) {
+	result = price * 2
+	return
+}
+
+func Noreturn() {
+	fmt.Println("no return")
+	return
+}
+
+func main() {
+	i := Plus(1, 2)
+	fmt.Println(i)
+
+	i2, i3 := Div(9, 3)
+	fmt.Println(i2,i3)
+	// 3 0
+
+  i4, _ := Div(9, 3)
+	fmt.Println(i4)
+	// 3
+
+	i5 := Duble(1000)
+	fmt.Println(i5)
+	// 2000
+
+	Noreturn()
+	// no return
+}
+```
+
+# 無名関数
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// 関数
+// 無名関数
+
+
+func main() {
+	f := func(x,y int) int {
+		return x + y
+	}
+	i := f(1, 2)
+	fmt.Println(i)
+	// 3
+
+	// 即時で引数を入れることもできる
+	i2 := func(x, y int) int {
+		return x + y
+	}(1, 2)
+	fmt.Println(i2)
+	// 3
+}
+```
+
+# 関数を返す関数
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// 関数
+// 関数を返す関数
+
+func ReturnFunc() func() {
+	return func() {
+		fmt.Println("i am a function")
+	}
+}
+
+func main() {
+	f := ReturnFunc()
+	f()
+	// i am a function
+}
+```
+
+# 関数を引数に取る関数
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// 関数
+// 関数を引数に取る関数
+
+func CallFunc(f func()) {
+	f()
+}
+
+func main() {
+	CallFunc(func() {
+		fmt.Println("I am a Function")
+	})
+}
+```
