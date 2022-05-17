@@ -794,3 +794,568 @@ func main() {
 	})
 }
 ```
+
+# クロージャー
+
+Go の無名関数はクロージャーで、
+
+クロージャーとは日本語では関数閉包と呼ばれ、関数と関数の処理に関する関数外の環境をセットして閉じ込めた物です。
+
+return されても store は初期化されないところが重要。
+
+```main.go
+package main
+
+import "fmt"
+
+// クロージャー
+
+func Later() func(string) string {
+	// storeは空文字でる
+	// 2度目の実行でfunc(next string)でnextに代入されていた値が入ってくる
+	var store string
+	// return func(next string)から始まるので"Hello"を代入した段階ではまだstoreは空文字
+	// storeはreturn func(next string)が実行され続ける限り監視され続ける
+	// returnされてもstoreは初期化されないところが重要
+		return func(next string) string {
+		// 最初はstoreは空文字なので""が出力される
+		s := store
+		// nextで渡された文字列"Hello"が代入されている
+		store = next
+		// 返り値はstore("空文字")なので最初は空文字が返る
+		return s
+	}
+}
+
+func main() {
+	f := Later()
+	fmt.Println(f("Hello"))
+	fmt.Println(f("My"))
+	fmt.Println(f("name"))
+	fmt.Println(f("is"))
+	fmt.Println(f("Golang"))
+	// ""
+	// "Hello"
+	// "My"
+	// "name"
+	// "is"
+}
+```
+
+# ジェネレーター
+
+何らかのルールに従って連続した値を返し続ける仕組みの事。
+
+```main.go
+package main
+
+import "fmt"
+
+// ジェネレーター
+// クロージャーを応用する
+
+func integers() func() int {
+	i := 0
+	// iに対して増分して返す関数
+	return func() int {
+		i++
+		return i
+	}
+}
+
+func main() {
+	ints := integers()
+	fmt.Println(ints())
+	fmt.Println(ints())
+	fmt.Println(ints())
+	fmt.Println(ints())
+	// 1
+	// 2
+	// 3
+	// 4
+
+	// 再定義してもintsと同じ挙動をする
+	others := integers()
+	fmt.Println(others())
+	fmt.Println(others())
+	fmt.Println(others())
+	fmt.Println(others())
+	// 1
+	// 2
+	// 3
+	// 4
+}
+```
+
+# if(条件分岐)
+
+```main.go
+package main
+
+import "fmt"
+
+// if
+// 条件分岐
+
+func main() {
+	a := 0
+	if a == 2 {
+		fmt.Println("two")
+	} else if a == 1 {
+		fmt.Println("one")
+	} else {
+		fmt.Println("I don,t know")
+	}
+
+	// 条件式に簡易文を使う
+	if b := 100; b == 100 {
+		fmt.Println("100")
+		// 100
+	} else {
+		fmt.Println("not 100")
+	}
+
+	// if文内では2になる
+	x := 0
+	if x := 2; true {
+		fmt.Println(x)
+		// 2
+	}
+	fmt.Println(x)
+	// 0
+}
+```
+
+# エラーハンドリング
+
+```main.go
+package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+// if
+// 条件分岐
+// エラーハンドリング
+
+func main() {
+	var s string = "ABC"
+
+	i, error := strconv.Atoi(s)
+	if error != nil {
+		fmt.Println(error)
+		// strconv.Atoi: parsing "ABC": invalid syntax
+	}
+	fmt.Printf("i = %T\n", i)
+	// i = int
+}
+```
+
+# for(繰り返し処理)
+
+```main.go
+package main
+
+import "fmt"
+
+// for
+// 繰り返し処理
+
+func main() {
+		i := 0
+	for {
+		i++
+		// forを中断させる場合は"break"を使う
+		if i > 10 {
+			break
+		}
+		fmt.Println("Loop")
+	}
+
+		// 条件付き繰り返し処理
+	point := 0
+	for point < 10 {
+		fmt.Println(point)
+		point++
+	}
+	// 0
+	// 1
+	// 2
+	// 3
+	// ...
+	// 9
+
+	for i := 0; i < 10; i++ {
+		if i == 3 {
+			// continueすることでiが3の場合は処理をスキップする
+			continue
+		}
+		fmt.Println(i)
+			// 0
+			// 1
+			// 2
+			// 4
+			// ...
+			// 9
+	}
+
+	arr := [3]int{1, 2, 3}
+	for i := 0; i < len(arr); i++ {
+		fmt.Println(arr[i])
+		// 1
+		// 2
+		// 3
+	}
+
+	arr2 := [3]int{1, 2, 3}
+	// iがindex番号でvが値
+	// 要略したい場合は_を使う
+	for i, v := range arr2 {
+		fmt.Println(i, v)
+		// 0 1
+		// 1 2
+		// 2 3
+	}
+
+	// スライス
+	// 可変長
+	sl := []string{"Python", "PHP", "Go"}
+	for i, v := range sl {
+		fmt.Println(i, v)
+		// 0 Python
+		// 1 PHP
+		// 2 Go
+	}
+
+	// マップ
+	// keyとvalueを取り出す
+	m := map[string]int{"apple": 100, "banana": 200}
+	for k, v := range m {
+		fmt.Println(k, v)
+		// apple 100
+		// banana 200
+	}
+}
+```
+
+# switch
+
+```main.go
+package main
+
+import "fmt"
+
+// switch
+// 式スイッチ
+
+func main() {
+	n := 1
+	switch n {
+	case 1, 2:
+		fmt.Println("one or two")
+	case 3, 4:
+		fmt.Println("three or four")
+	default:
+		fmt.Println("other")
+	}
+
+	switch n2 := 2; n2 {
+	case 1, 2:
+		fmt.Println("one or two")
+	case 3, 4:
+		fmt.Println("three or four")
+	default:
+		fmt.Println("other")
+	}
+
+	n3 := 6
+	switch {
+	case n3 > 0 && n3 < 4:
+		fmt.Println("0 < n3 < 4")
+	case n3 > 3 && n3 < 7:
+		fmt.Println("3 < n3 < 7")
+	}
+
+		switch n4 := 2; n4 {
+	case 1, 2:
+		fmt.Println("one or two")
+	case 3, 4:
+		fmt.Println("three or four")
+		// 列挙と判定が同じswitchに混在する場合はエラーになる
+		// case n4 > 3 && n4 < 6:
+		// fmt.Println("3 < n4 < 6")
+	default:
+		fmt.Println("other")
+	}
+}
+```
+
+# 型 Switch&型アサーション
+
+```main.go
+package main
+
+import "fmt"
+
+// switch
+// 型スイッチ
+
+// 型アサーション
+func anything(a interface{}) {
+	switch v := a.(type) {
+	case int:
+		fmt.Println(v, "is int")
+	case string:
+		fmt.Println(v, "is string")
+	default:
+		fmt.Println(v, "is unknown")
+	}
+}
+
+func main() {
+	anything("aaa")
+	anything(1)
+
+	var x interface{} = 3
+	// interfaceをintで復元する
+	i := x.(int)
+	fmt.Println(i + 2)
+	// 5
+
+	// xはinterfaceで型が外れる
+	// fmt.Println(x + 2)
+	// error
+
+
+	// int型なのでfloat64に変換できない
+	// f := x.(float64)
+	// fmt.Println(f + 2)
+	// runtime error
+
+	// runtime errorにならない
+	f, isFloat64 := x.(float64)
+	fmt.Println(f, isFloat64)
+	// 0 false
+
+	i2, isInt := x.(int)
+	fmt.Println(i2, isInt)
+	// 3 true
+
+	if x == nil {
+		fmt.Println("x is nil")
+	} else if i, isInt := x.(int); isInt {
+		fmt.Println(i,"x is int")
+	} else if s, isString := x.(string); isString {
+		fmt.Println(s,"x is string")
+	} else {
+		fmt.Println("x is unknown")
+	}
+
+	switch x.(type) {
+	case int:
+		fmt.Println("x is int")
+	case string:
+		fmt.Println("x is string")
+	default:
+		fmt.Println("x is unknown")
+	}
+
+	switch v := x.(type) {
+	case bool:
+		fmt.Println(v, "is bool")
+	case int:
+		fmt.Println(v, "is int")
+	case string:
+		fmt.Println(v, "is string")
+	default:
+		fmt.Println(v, "is unknown")
+	}
+}
+```
+
+# ラベル付き for
+
+```main.go
+package main
+
+import "fmt"
+
+// ラベル付きfor
+
+func main() {
+	/*
+	Loop:
+	for {
+		for {
+			for {
+				fmt.Println("START")
+				// 上で宣言したLoopをラベルすることで間の処理をスキップすることができる
+				break Loop
+			}
+			fmt.Println("処理をしない")
+		}
+		fmt.Println("処理をしない")
+	}
+	fmt.Println("END")
+	*/
+
+	// jが1より上であれば「fmt.Println("処理をしない")」の処理をスキップしてjのforを繰り返す
+	Loop:
+	for i := 0; i < 3; i++ {
+		for j := 1; j < 3; j++ {
+			if j > 1 {
+				continue Loop
+			}
+			fmt.Println(i,j,i+j)
+		}
+		fmt.Println("処理をしない")
+	}
+
+}
+```
+
+# defer
+
+関数の最後に実行される
+
+```main.go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+// defer
+// 関数の終了時に登録することができる
+
+func TestDefer() {
+	// deferは関数の終了時に登録することができる
+	defer fmt.Println("END")
+	fmt.Println("START")
+}
+
+func Rundefer() {
+	defer fmt.Println("defer1")
+	defer fmt.Println("defer2")
+	defer fmt.Println("defer3")
+}
+
+func main() {
+	TestDefer()
+	// START
+  //	END
+
+	// 複数のderferを登録することもできる
+	defer func() {
+		fmt.Println("defer1")
+		fmt.Println("defer2")
+		fmt.Println("defer2")
+	}()
+
+	// 後に実行した関数から実行される
+	Rundefer()
+	// defer3
+  // defer2
+  // defer1
+
+	file, error := os.Create("test.txt")
+	if error != nil {
+		fmt.Println(error)
+	}
+	// test.txtというファイルがcurdirに作成される
+	// deferでファイルを閉じる
+	defer file.Close()
+
+	file.Write([]byte("test"))
+
+}
+```
+
+# Panic & Recover
+
+```main.go
+package main
+
+import "fmt"
+
+// panic & recover
+// 例外処理(runtimeを強制的に停止させる)
+// あまり使わない
+
+func main() {
+	defer func() {
+		// panicが発生した時に実行されるようにするためdeferでrecoverを定義する方がいい
+		if x := recover(); x != nil {
+			fmt.Println(x)
+		}
+	}()
+	panic("runtime errpr")
+	fmt.Println("one or two")
+}
+```
+
+# Goroutin(ゴルーチン)並行処理
+
+```main.go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+// go goroutin(ゴルーチン)
+// 並行処理
+
+func sub() {
+	for {
+		fmt.Println("sub loop")
+		// 100ms感覚で実行される
+		time.Sleep(100 * time.Millisecond)
+	}
+}
+
+func main() {
+	// 「go」を付けることで並行処理できる
+	// 「go」がなければsub()が無限ループして永遠に下のforに到達しない
+	go sub()
+	go sub()
+
+	for {
+		fmt.Println("main loop")
+		time.Sleep(200 * time.Millisecond)
+	}
+}
+```
+
+# init(初期化)
+
+```main.go
+package main
+
+import "fmt"
+
+// init
+// 初期化
+
+// initはmain()よりも先に実行される
+func init() {
+	fmt.Println("init")
+}
+
+// 複数init()を定義できるが基本的に一つにしておく
+func init() {
+	fmt.Println("init2")
+}
+
+func main() {
+
+	fmt.Println("Main")
+	// init
+	// init2
+  // Main
+}
+```
