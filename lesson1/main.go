@@ -1,18 +1,38 @@
 package main
 
-import (
-	"fmt"
-)
+import "fmt"
 
-// 関数
-// 関数を引数に取る関数
+// ジェネレーター
+// クロージャーを応用する
 
-func CallFunc(f func()) {
-	f()
+func integers() func() int {
+	i := 0
+	// iに対して増分して返す関数
+	return func() int {
+		i++
+		return i
+	}
 }
 
 func main() {
-	CallFunc(func() {
-		fmt.Println("I am a Function")
-	})
+	ints := integers()
+	fmt.Println(ints())
+	fmt.Println(ints())
+	fmt.Println(ints())
+	fmt.Println(ints())
+	// 1
+	// 2
+	// 3
+	// 4
+
+	// 再定義してもintsと同じ挙動をする
+	others := integers()
+	fmt.Println(others())
+	fmt.Println(others())
+	fmt.Println(others())
+	fmt.Println(others())
+	// 1
+	// 2
+	// 3
+	// 4
 }
