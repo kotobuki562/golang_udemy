@@ -1605,3 +1605,236 @@ func main() {
 	// 6
 }
 ```
+
+# マップ
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// マップ
+
+func main() {
+	var m = map[string]int{"A": 100, "B": 200}
+	fmt.Println(m)
+	// map[A:100 B:200]
+
+	m2 := map[string]int{"A": 100, "B": 200}
+	fmt.Println(m2)
+	// map[A:100 B:200]
+
+	m3 := map[int]string{
+		1: "A",
+		2: "B",
+	}
+	fmt.Println(m3)
+	// map[1:A 2:B]
+
+	m4 := make(map[int]string)
+	fmt.Println(m4)
+	// map[]
+
+	m4[1] = "JAPAN"
+	m4[2] = "USA"
+	fmt.Println(m4)
+	// map[1:JAPAN 2:USA]
+
+	fmt.Println(m4[1])
+	// JAPAN
+	fmt.Println(m["A"])
+	// 100
+	fmt.Println(m4[3])
+	// "" <-nilにもならない
+
+	s, ok := m4[1]
+	fmt.Println(s, ok)
+	// JAPAN true
+
+	s, ok = m4[3]
+	fmt.Println(s, ok)
+	//  "" false
+	if !ok {
+		fmt.Println("no data")
+	}
+
+	m4[2] = "US"
+	fmt.Println(m4)
+	// map[1:JAPAN 2:US]
+
+	m4[3] = "CHINA"
+	fmt.Println(m4)
+	// map[1:JAPAN 2:US 3:CHINA]
+
+	// deleteの第一引数でmapを第二引数にkeyを指定して削除する
+	delete(m4, 3)
+	fmt.Println(m4)
+	// map[1:JAPAN 2:US]
+
+}
+```
+
+# マップ(for)
+
+```mian.go
+package main
+
+import (
+	"fmt"
+)
+
+// マップ
+// for
+
+func main() {
+	m := map[string]int{
+		"Apple": 100,
+		"Banana": 200,
+	}
+
+	for k, v := range m {
+		fmt.Println(k, v)
+		// Apple 100
+		// Banana 200
+	}
+}
+```
+
+# チャネル
+
+ゴルーチン間でデータの送受信を行う
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// channel
+// 複数のゴルーチン間でのデータの受け渡しをするために設計されたデータ構造
+// 宣言、操作
+
+func main() {
+	// チャネルの宣言
+	var ch1 chan int
+
+	/*
+	受信用のチャネルとして明示的に定義
+	var ch2 <-chan int
+
+	送信用のチャネルとして明示的に定義
+	var ch3 chan<- int
+	*/
+
+	// makeを使ってチャネルに書き込みや読み込みを行えるようにする
+	ch1 = make(chan int)
+
+	ch2 := make(chan int)
+
+	fmt.Println(cap(ch1))
+	// 0
+	fmt.Println(cap(ch2))
+	// 0
+
+	// bufサイズを第二引数で指定する
+	ch3 := make(chan int, 5)
+	fmt.Println(cap(ch3))
+	// 5
+
+	// ch3に1を送信する
+	ch3 <- 1
+	fmt.Println(len(ch3))
+	// 1
+
+	ch3 <- 2
+	ch3 <- 3
+	fmt.Println("len", len(ch3))
+	// 3
+
+	i := <-ch3
+	fmt.Println(i)
+	// 1
+	fmt.Println("len", len(ch3))
+	// 2
+
+	i2 := <-ch3
+	fmt.Println(i2)
+	// 2
+	fmt.Println("len", len(ch3))
+	// 1
+
+	fmt.Println(<-ch3)
+	// 3
+	fmt.Println("len", len(ch3))
+	// 0
+
+	ch3 <- 1
+	// ここで一つ取り出すことでdeadlockにはならない
+	fmt.Println(<-ch3)
+	// 1
+	ch3 <- 2
+	fmt.Println(<-ch3)
+	// 2
+	ch3 <- 3
+	ch3 <- 4
+	ch3 <- 5
+	ch3 <- 6
+	// deadlock!
+	// bufを超えた場合はdeadlockエラーになる
+
+	// 先に入れたデータから順番に取り出される
+}
+```
+
+# チャネル(channel / goroutin)
+
+```main.go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+// channel
+// チャネルとゴルーチン
+
+func reciever(c chan int) {
+	for {
+		i := <- c
+		fmt.Println(i)
+	}
+}
+
+func main() {
+
+	ch1 := make(chan int)
+	ch2 := make(chan int)
+
+	// deadlock
+	// ゴルーチン間での送受信が前提なのでチャネル単体ではdeadlockになる
+
+	// チャネルに値が入るのを待つ
+	go reciever(ch1)
+	go reciever(ch2)
+
+	// i(int)をforでチャネルに送信
+	i := 0
+	for i < 100 {
+		ch1 <- i
+		ch2 <- i
+		time.Sleep(50 * time.Millisecond)
+		i++
+	}
+	// 1
+	// 1
+	//1
+	// 2
+	// ...
+	// 99
+	// 99
+}
+```
