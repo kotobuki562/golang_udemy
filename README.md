@@ -1359,3 +1359,482 @@ func main() {
   // Main
 }
 ```
+
+# スライス
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// スライス
+// 宣言・操作
+
+func main() {
+	// 配列は[]内に要素数を指定していた
+	var sl []int
+	fmt.Println(sl)
+	// []
+
+	var sl2 []int = []int{100,200}
+	fmt.Println(sl2)
+	// [100 200]
+
+	sl3 := []string{"A", "B"}
+	fmt.Println(sl3)
+	// [A B]
+
+	sl4 := make([]int, 5)
+	fmt.Println(sl4)
+	// [0 0 0 0 0]
+
+	sl2[0] = 1000
+	fmt.Println(sl2)
+	// [1000 200]
+
+	sl5 := []int{1, 2, 3, 4, 5}
+	fmt.Println(sl5)
+
+	fmt.Println(sl5[0])
+
+	// indexの2と4
+	fmt.Println(sl5[2:4])
+	// [3 4]
+
+	// indexの2の手前まで
+	fmt.Println(sl5[:2])
+	// [1 2]
+
+	// indexの3から最後
+	fmt.Println(sl5[2:])
+	// [3 4 5]
+
+	// indexの0から最後
+	fmt.Println(sl5[:])
+	// [1 2 3 4 5]
+
+	// 最後の要素
+	fmt.Println(sl5[len(sl5)-1])
+
+	// 一番最初と最後以外の要素
+	fmt.Println(sl5[1 : len(sl5)-1])
+	// [2 3 4]
+}
+```
+
+# スライス(make / append / cap)
+
+make でスライスを作る。第二引数で容量を確保する
+cap で容量を測る
+append で要素の追加を行う
+
+要領以上の要素が追加されるとメモリの消費が倍になってしまいます。
+
+メモリーを気にするような開発の場合は、容量にも気をつけます。
+
+最初は気にせずやるほうがいいと思います。
+
+過剰にメモリを確保してしまうと実行速度が落ちたりする。
+
+良質なパフォーマンスを実現するには、容量の管理も気にします
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// スライス
+// append make len cap
+
+func main() {
+	sl := []int{100, 200}
+	fmt.Println(sl)
+
+	// 300という要素を追加する
+	sl = append(sl, 300)
+	fmt.Println(sl)
+	// [100 200 300]
+
+	sl = append(sl, 400, 500)
+	fmt.Println(sl)
+	// [100 200 300 400 500]
+
+	sl2 := make([]int, 5)
+	fmt.Println(sl2)
+
+	fmt.Println(len(sl2))
+	// 5
+
+	// sl2の容量を測る
+	fmt.Println(cap(sl2))
+	// 5
+
+	// 第二引数で容量を指定する
+	sl3 := make([]int, 5, 10)
+
+	fmt.Println(sl3)
+	// [0 0 0 0 0]
+
+	fmt.Println(len(sl3))
+	// 5
+
+	fmt.Println(cap(sl3))
+	// 10
+
+	sl3 = append(sl3, 1, 2, 3, 4, 5, 6, 7)
+	fmt.Println(sl3)
+	// [0 0 0 0 0 1 2 3 4 5 6 7]
+
+	fmt.Println(cap(sl3))
+	// 20
+
+}
+```
+
+# スライス(copy)
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// スライス
+// copy
+
+func main() {
+	sl := []int{100, 200}
+	sl2 := sl
+
+	// 元データのslに1000が入る
+	sl2[0] = 1000
+	fmt.Println(sl)
+	// [1000 200]
+
+	// 基本型の場合はそれぞれ独立している
+	// 山椒型の場合は元データも更新される
+	var i int = 10
+	i2 := i
+	i2 = 100
+	fmt.Println(i)
+	// 10
+	fmt.Println(i2)
+	// 100
+
+	sl3 := []int{1, 2, 3, 4, 5}
+	fmt.Println(sl3)
+	sl4 := make([]int, 5, 10)
+	fmt.Println(sl4)
+	// 第一引数にコピー先、第二引数にコピー元
+	// 先頭から塗りつぶすようにコピーしていくしよう
+	n := copy(sl4 ,sl3)
+	fmt.Println(n, sl4)
+	// 5 [1 2 3 4 5]
+}
+```
+
+# スライス(for)
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// スライス
+// for
+
+func main() {
+	sl := []string{"A", "B", "C"}
+	fmt.Println(sl)
+	// [A B C]
+
+	for i, v := range sl {
+		// index番号と要素を取得
+		fmt.Println(i, v)
+		// 0 A
+		// 1 B
+		// 2 C
+	}
+
+	for i := 0; i < len(sl); i++ {
+		fmt.Println(sl[i])
+		// A
+		// B
+		// C
+	}
+
+}
+```
+
+# スライス(可変長引数)
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// スライス
+// 可変長引数
+
+func Sum(s ...int) int {
+	n := 0
+	for _, v := range s {
+		n += v
+	}
+	return n
+}
+
+func main() {
+	fmt.Println(Sum(1, 2, 3, 4, 5))
+	// 15
+
+	fmt.Println(Sum())
+	// 0
+
+	sl := []int{1, 2, 3}
+	fmt.Println(Sum(sl...))
+	// 6
+}
+```
+
+# マップ
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// マップ
+
+func main() {
+	var m = map[string]int{"A": 100, "B": 200}
+	fmt.Println(m)
+	// map[A:100 B:200]
+
+	m2 := map[string]int{"A": 100, "B": 200}
+	fmt.Println(m2)
+	// map[A:100 B:200]
+
+	m3 := map[int]string{
+		1: "A",
+		2: "B",
+	}
+	fmt.Println(m3)
+	// map[1:A 2:B]
+
+	m4 := make(map[int]string)
+	fmt.Println(m4)
+	// map[]
+
+	m4[1] = "JAPAN"
+	m4[2] = "USA"
+	fmt.Println(m4)
+	// map[1:JAPAN 2:USA]
+
+	fmt.Println(m4[1])
+	// JAPAN
+	fmt.Println(m["A"])
+	// 100
+	fmt.Println(m4[3])
+	// "" <-nilにもならない
+
+	s, ok := m4[1]
+	fmt.Println(s, ok)
+	// JAPAN true
+
+	s, ok = m4[3]
+	fmt.Println(s, ok)
+	//  "" false
+	if !ok {
+		fmt.Println("no data")
+	}
+
+	m4[2] = "US"
+	fmt.Println(m4)
+	// map[1:JAPAN 2:US]
+
+	m4[3] = "CHINA"
+	fmt.Println(m4)
+	// map[1:JAPAN 2:US 3:CHINA]
+
+	// deleteの第一引数でmapを第二引数にkeyを指定して削除する
+	delete(m4, 3)
+	fmt.Println(m4)
+	// map[1:JAPAN 2:US]
+
+}
+```
+
+# マップ(for)
+
+```mian.go
+package main
+
+import (
+	"fmt"
+)
+
+// マップ
+// for
+
+func main() {
+	m := map[string]int{
+		"Apple": 100,
+		"Banana": 200,
+	}
+
+	for k, v := range m {
+		fmt.Println(k, v)
+		// Apple 100
+		// Banana 200
+	}
+}
+```
+
+# チャネル
+
+ゴルーチン間でデータの送受信を行う
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// channel
+// 複数のゴルーチン間でのデータの受け渡しをするために設計されたデータ構造
+// 宣言、操作
+
+func main() {
+	// チャネルの宣言
+	var ch1 chan int
+
+	/*
+	受信用のチャネルとして明示的に定義
+	var ch2 <-chan int
+
+	送信用のチャネルとして明示的に定義
+	var ch3 chan<- int
+	*/
+
+	// makeを使ってチャネルに書き込みや読み込みを行えるようにする
+	ch1 = make(chan int)
+
+	ch2 := make(chan int)
+
+	fmt.Println(cap(ch1))
+	// 0
+	fmt.Println(cap(ch2))
+	// 0
+
+	// bufサイズを第二引数で指定する
+	ch3 := make(chan int, 5)
+	fmt.Println(cap(ch3))
+	// 5
+
+	// ch3に1を送信する
+	ch3 <- 1
+	fmt.Println(len(ch3))
+	// 1
+
+	ch3 <- 2
+	ch3 <- 3
+	fmt.Println("len", len(ch3))
+	// 3
+
+	i := <-ch3
+	fmt.Println(i)
+	// 1
+	fmt.Println("len", len(ch3))
+	// 2
+
+	i2 := <-ch3
+	fmt.Println(i2)
+	// 2
+	fmt.Println("len", len(ch3))
+	// 1
+
+	fmt.Println(<-ch3)
+	// 3
+	fmt.Println("len", len(ch3))
+	// 0
+
+	ch3 <- 1
+	// ここで一つ取り出すことでdeadlockにはならない
+	fmt.Println(<-ch3)
+	// 1
+	ch3 <- 2
+	fmt.Println(<-ch3)
+	// 2
+	ch3 <- 3
+	ch3 <- 4
+	ch3 <- 5
+	ch3 <- 6
+	// deadlock!
+	// bufを超えた場合はdeadlockエラーになる
+
+	// 先に入れたデータから順番に取り出される
+}
+```
+
+# チャネル(channel / goroutin)
+
+```main.go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+// channel
+// チャネルとゴルーチン
+
+func reciever(c chan int) {
+	for {
+		i := <- c
+		fmt.Println(i)
+	}
+}
+
+func main() {
+
+	ch1 := make(chan int)
+	ch2 := make(chan int)
+
+	// deadlock
+	// ゴルーチン間での送受信が前提なのでチャネル単体ではdeadlockになる
+
+	// チャネルに値が入るのを待つ
+	go reciever(ch1)
+	go reciever(ch2)
+
+	// i(int)をforでチャネルに送信
+	i := 0
+	for i < 100 {
+		ch1 <- i
+		ch2 <- i
+		time.Sleep(50 * time.Millisecond)
+		i++
+	}
+	// 1
+	// 1
+	//1
+	// 2
+	// ...
+	// 99
+	// 99
+}
+```
