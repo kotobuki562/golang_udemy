@@ -1359,3 +1359,249 @@ func main() {
   // Main
 }
 ```
+
+# スライス
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// スライス
+// 宣言・操作
+
+func main() {
+	// 配列は[]内に要素数を指定していた
+	var sl []int
+	fmt.Println(sl)
+	// []
+
+	var sl2 []int = []int{100,200}
+	fmt.Println(sl2)
+	// [100 200]
+
+	sl3 := []string{"A", "B"}
+	fmt.Println(sl3)
+	// [A B]
+
+	sl4 := make([]int, 5)
+	fmt.Println(sl4)
+	// [0 0 0 0 0]
+
+	sl2[0] = 1000
+	fmt.Println(sl2)
+	// [1000 200]
+
+	sl5 := []int{1, 2, 3, 4, 5}
+	fmt.Println(sl5)
+
+	fmt.Println(sl5[0])
+
+	// indexの2と4
+	fmt.Println(sl5[2:4])
+	// [3 4]
+
+	// indexの2の手前まで
+	fmt.Println(sl5[:2])
+	// [1 2]
+
+	// indexの3から最後
+	fmt.Println(sl5[2:])
+	// [3 4 5]
+
+	// indexの0から最後
+	fmt.Println(sl5[:])
+	// [1 2 3 4 5]
+
+	// 最後の要素
+	fmt.Println(sl5[len(sl5)-1])
+
+	// 一番最初と最後以外の要素
+	fmt.Println(sl5[1 : len(sl5)-1])
+	// [2 3 4]
+}
+```
+
+# スライス(make / append / cap)
+
+make でスライスを作る。第二引数で容量を確保する
+cap で容量を測る
+append で要素の追加を行う
+
+要領以上の要素が追加されるとメモリの消費が倍になってしまいます。
+
+メモリーを気にするような開発の場合は、容量にも気をつけます。
+
+最初は気にせずやるほうがいいと思います。
+
+過剰にメモリを確保してしまうと実行速度が落ちたりする。
+
+良質なパフォーマンスを実現するには、容量の管理も気にします
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// スライス
+// append make len cap
+
+func main() {
+	sl := []int{100, 200}
+	fmt.Println(sl)
+
+	// 300という要素を追加する
+	sl = append(sl, 300)
+	fmt.Println(sl)
+	// [100 200 300]
+
+	sl = append(sl, 400, 500)
+	fmt.Println(sl)
+	// [100 200 300 400 500]
+
+	sl2 := make([]int, 5)
+	fmt.Println(sl2)
+
+	fmt.Println(len(sl2))
+	// 5
+
+	// sl2の容量を測る
+	fmt.Println(cap(sl2))
+	// 5
+
+	// 第二引数で容量を指定する
+	sl3 := make([]int, 5, 10)
+
+	fmt.Println(sl3)
+	// [0 0 0 0 0]
+
+	fmt.Println(len(sl3))
+	// 5
+
+	fmt.Println(cap(sl3))
+	// 10
+
+	sl3 = append(sl3, 1, 2, 3, 4, 5, 6, 7)
+	fmt.Println(sl3)
+	// [0 0 0 0 0 1 2 3 4 5 6 7]
+
+	fmt.Println(cap(sl3))
+	// 20
+
+}
+```
+
+# スライス(copy)
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// スライス
+// copy
+
+func main() {
+	sl := []int{100, 200}
+	sl2 := sl
+
+	// 元データのslに1000が入る
+	sl2[0] = 1000
+	fmt.Println(sl)
+	// [1000 200]
+
+	// 基本型の場合はそれぞれ独立している
+	// 山椒型の場合は元データも更新される
+	var i int = 10
+	i2 := i
+	i2 = 100
+	fmt.Println(i)
+	// 10
+	fmt.Println(i2)
+	// 100
+
+	sl3 := []int{1, 2, 3, 4, 5}
+	fmt.Println(sl3)
+	sl4 := make([]int, 5, 10)
+	fmt.Println(sl4)
+	// 第一引数にコピー先、第二引数にコピー元
+	// 先頭から塗りつぶすようにコピーしていくしよう
+	n := copy(sl4 ,sl3)
+	fmt.Println(n, sl4)
+	// 5 [1 2 3 4 5]
+}
+```
+
+# スライス(for)
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// スライス
+// for
+
+func main() {
+	sl := []string{"A", "B", "C"}
+	fmt.Println(sl)
+	// [A B C]
+
+	for i, v := range sl {
+		// index番号と要素を取得
+		fmt.Println(i, v)
+		// 0 A
+		// 1 B
+		// 2 C
+	}
+
+	for i := 0; i < len(sl); i++ {
+		fmt.Println(sl[i])
+		// A
+		// B
+		// C
+	}
+
+}
+```
+
+# スライス(可変長引数)
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// スライス
+// 可変長引数
+
+func Sum(s ...int) int {
+	n := 0
+	for _, v := range s {
+		n += v
+	}
+	return n
+}
+
+func main() {
+	fmt.Println(Sum(1, 2, 3, 4, 5))
+	// 15
+
+	fmt.Println(Sum())
+	// 0
+
+	sl := []int{1, 2, 3}
+	fmt.Println(Sum(sl...))
+	// 6
+}
+```
