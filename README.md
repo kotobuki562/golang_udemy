@@ -2488,3 +2488,105 @@ func main() {
 
 }
 ```
+
+# interface(型アサーション)
+
+```main.go
+package main
+
+import "fmt"
+
+// interface
+// もっともポピュラーな使い方。異なる方に共通の性質を付与する
+
+type Stringfy interface {
+	ToString() string
+}
+
+type Person struct {
+	Name string
+	Age  int
+}
+
+func (p *Person) ToString() string {
+	return fmt.Sprintf("Name=%v, Age=%v", p.Name, p.Age)
+}
+
+type Car struct {
+	Number string
+	Model string
+}
+
+func (c *Car) ToString() string {
+	return fmt.Sprintf("Number=%v, Model=%v", c.Number, c.Model)
+}
+
+func main() {
+	vs := []Stringfy{
+		&Person{Name: "Taro", Age: 21},
+		&Car{Number: "123-456", Model: "AB-1234"},
+	}
+
+	// interfaceを使うことで異なる構造体に共通の処理やメソッドを実装することができる
+	for _, v := range vs {
+		fmt.Println(v.ToString())
+		// Name=Taro, Age=21
+		// Number=123-456, Model=AB-1234
+	}
+}
+```
+
+# interface(カスタムエラー)
+
+```main.go
+package main
+
+import "fmt"
+
+// interface
+// カスタムエラー
+
+/*
+Golangのソースコード
+type error interface {
+	Error() string
+}
+*/
+
+type MyError struct {
+	Message string
+	ErrCode int
+}
+
+func (e *MyError) Error() string {
+	return e.Message
+}
+
+func RaiseError() error {
+	return &MyError{
+		Message: "This is my error",
+		ErrCode: 1234,
+	}
+}
+
+func main() {
+	err := RaiseError()
+	fmt.Println(err.Error())
+
+	// fmt.Println(err.Message)
+	// error
+
+	e, ok := err.(*MyError)
+	if ok {
+		fmt.Println(e.ErrCode)
+		// This is my error
+	}
+
+}
+```
+
+# interface(Stringer)
+
+```main.go
+
+```
