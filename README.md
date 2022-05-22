@@ -1838,3 +1838,271 @@ func main() {
 	// 99
 }
 ```
+
+# チャネル(close)
+
+```main.go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+// Channel
+// close
+
+func recieve(name string, ch chan int) {
+	for {
+		// 受け取ったchがclose状態かどうかをチェック
+		i, ok := <- ch
+		// もしclose状態ならループを抜ける
+		if !ok {
+			break
+		}
+		// closeでなければ受け取った値を表示
+		fmt.Println(name, i)
+	}
+	fmt.Println(name, "end")
+}
+
+func main() {
+	// 最初はopen状態
+	ch1 := make(chan int, 2)
+
+
+	// ch1 <- 1
+
+	// close(ch1)
+
+	// ch1 <- 1
+	// runtimeError
+
+	// fmt.Println(ch1)
+	// 0xc0000b6000
+
+	// runtimeエラーにならない
+	// ch1がopen状態であればtrueになる
+	// i, ok := <- ch1
+	// fmt.Println(i, ok)
+	// 0 false
+
+	// i2, ok := <- ch1
+	// fmt.Println(i2, ok)
+	// 0 false
+
+	go recieve("1.goroutin", ch1)
+	go recieve("2.goroutin", ch1)
+	go recieve("3.goroutin", ch1)
+
+	i := 0
+	for i < 100 {
+		ch1 <- i
+		i++
+	}
+
+	close(ch1)
+	time.Sleep(3 + time.Second)
+
+
+}
+```
+
+# チャネル(for)
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// Channel
+// for
+
+func main() {
+	ch1 := make(chan int, 3)
+
+	ch1 <- 1
+	ch1 <- 2
+	ch1 <- 3
+
+	// closeで締めないとdeadrockになる
+	close(ch1)
+	for i := range ch1 {
+		fmt.Println(i)
+	}
+	/*
+	1
+	2
+	3
+	fatal error: all goroutines are asleep - deadlock!
+	*/
+
+}
+```
+
+# チャネル(select)
+
+```main.go
+package main
+
+import "fmt"
+
+// Channel
+// select
+
+func main() {
+	ch1 := make(chan int, 2)
+	ch2 := make(chan string, 2)
+
+	// これらがあるとランダムに出力されてしまう
+	ch2 <- "A"
+	ch1 <- 1
+	ch2 <- "B"
+	ch1 <- 2
+
+	// どちらかのチャネルをselectして行えばデッドロックされない
+	// しかし、上のv1のみ計算される。ランダムになってしまう
+	select {
+	case v1 := <- ch1:
+		fmt.Println(v1 + 1000)
+	case v2 := <- ch2:
+		fmt.Println(v2 + "!?")
+	default:
+		fmt.Println("どちらでもない")
+	}
+
+	ch3 := make(chan int)
+	ch4 := make(chan int)
+	ch5 := make(chan int)
+
+	// reciever
+	go func() {
+		for {
+			i := <- ch3
+			ch4 <- i * 2
+		}
+	}()
+
+	go func() {
+		for {
+			i2 := <- ch4
+			ch5 <- i2 - 1
+		}
+	}()
+
+	n := 0
+	// Lを定義しないとbreakしても無限ループ
+	L:
+	for {
+		select {
+			case ch3 <- n:
+				n++
+			case i3 := <- ch5:
+				fmt.Println("recieve", i3)
+			default:
+				if n > 100 {
+					break L
+				}
+		}
+		// if n > 100 {
+		// 	break
+		// }
+	}
+	/*
+	recieve -1
+	recieve 0
+	recieve 1
+	...
+	recieve 197
+	*/
+}
+```
+
+# ポインタ型
+
+![](https://img-c.udemycdn.com/redactor/raw/article_lecture/2021-07-08_17-17-13-dafb07c608a3a20380d54cf2b7249d6a.PNG)
+
+Go にはポインタという機能があります。
+
+ポインタとは、値型に分類されるデータ構造(基本型、参照型、構造体）のメモリ上のアドレスと型の情報のことです。
+
+Go ではこれを使って、データ構造を間接的に参照、操作ができる様になっている。
+
+主に値型の操作に使われ、参照型は元からその機能を含んでいる為、基本的には不要となっています。
+
+> var などで定義したデータを更新するときにポインタを使って、対象のデータがどこのアドレスに格納されているかを確認する。
+> 対象のデータが格納されているアドレスに対して値の更新を行うことでデータを更新することができる
+> 参照型であればポインタを使わずに値の更新ができる
+
+```main.go
+package main
+
+import (
+	"fmt"
+)
+
+// ポインタ
+
+func Double(i int) {
+	i = i * 2
+}
+
+// 参照型
+func DoubleV2(i *int) {
+	*i = *i * 2
+}
+
+// 参照型
+// 参照型であれば値の更新にポインタは必要ない
+func DoubleV3(s []int) {
+	for i, v := range s {
+		s[i] = v * 2
+	}
+}
+
+func main() {
+	var n int = 100
+	fmt.Println(n)
+
+	// &を付けるとメモリ上のアドレスが出力される
+	fmt.Println(&n)
+	// 0xc0000b2008
+
+	Double(n)
+	fmt.Println(n)
+	// 100
+
+	// アドレスを渡している
+	// nの更新ができるようになる
+	var p *int = &n
+	/*
+	fmt.Println(p)
+	// 0xc0000b2008
+	fmt.Println(*p)
+	// 100
+
+	*p = 300
+	fmt.Println(n)
+	// 200
+
+	n = 200
+	fmt.Println(*p)
+	// 200
+	*/
+
+	DoubleV2(&n)
+	fmt.Println(n)
+	// 200
+
+	DoubleV2(p)
+	fmt.Println(*p)
+	// 400
+
+	var sl []int = []int{1, 2, 3}
+	DoubleV3(sl)
+	fmt.Println(sl)
+	// [2 4 6]
+}
+```
