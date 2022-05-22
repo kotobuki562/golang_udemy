@@ -2106,3 +2106,385 @@ func main() {
 	// [2 4 6]
 }
 ```
+
+# struct(構造体)
+
+クラス的なもの
+
+```main.go
+package main
+
+import "fmt"
+
+// struct
+// クラス的なもの
+
+type User struct {
+	Name string
+	Age int
+	// X, Y int
+}
+
+func UpdateUser(user User) {
+	user.Name = "user1"
+	user.Age = 1000
+}
+
+func UpdateUser2(user *User) {
+	user.Name = "A"
+	user.Age = 1000
+}
+
+
+func main() {
+	var user1 User
+	fmt.Println(user1)
+		// { 0 0 0}
+	user1.Name = "user1"
+	user1.Age = 20
+	fmt.Println(user1)
+	// {user1 20 0 0}
+
+	user2 := User{}
+	fmt.Println(user2)
+	// { 0 0 0}
+
+	user2.Name = "user2"
+	user2.Age = 30
+	fmt.Println(user2)
+	// {user2 30 0 0}
+
+	user3 := User{
+		Name: "user3",
+		Age: 40,
+	}
+	fmt.Println(user3)
+	// {user3 40 0 0}
+
+	// X, Yをなくすとkeyを指定しなくてもできる
+	user4 := User{"user4", 50}
+	fmt.Println(user4)
+	// {user4 50}
+
+	user6 := User{Name: "user6"}
+	fmt.Println(user6)
+	// {user6 0}
+
+	// newで定義するとポインタ型になる
+	user7 := new(User)
+	fmt.Println(user7)
+	// &{ 0}
+
+	// アドレス演算子でポインタを取得
+	// ポインタを使うときはアドレス演算子を使う
+	user8 := &User{}
+	fmt.Println(user8)
+	// &{ 0}
+
+	// 値型なので本体であるuser1には影響が出ない
+	UpdateUser(user1)
+	// ポインタ型で渡してあげると更新できる
+	UpdateUser2(user8)
+	fmt.Println(user1)
+	// {user1 20}
+	fmt.Println(user8)
+	// &{A 1000}
+
+}
+```
+
+# struct(メソッド)
+
+メソッドの引数は基本的にポインタ型にしておくのが吉
+
+```main.go
+package main
+
+import "fmt"
+
+// struct
+// メソッド
+
+type User struct {
+	Name string
+	Age int
+	// X, Y int
+}
+
+// メソッドの宣言
+// メソッドはfuncの後ろに()でくくったものがメソッド名になる
+func (u User) SayName() {
+	fmt.Println(u.Name)
+}
+
+func (u User) SetName(name string) {
+	u.Name = name
+}
+
+func (u *User) SetName2(name string) {
+	u.Name = name
+}
+
+func main() {
+	user1 := User{
+		Name: "user1",
+	}
+	user1.SayName()
+	// user1
+
+	user1.SetName("user2")
+	user1.SayName()
+	// user1
+
+	// SetName2はポインタ型なので本体のNameを更新する
+	user1.SetName2("user3")
+	user1.SayName()
+	// user3
+
+	user2 := &User{
+		Name: "user2",
+	}
+	user2.SetName2("B")
+	user2.SayName()
+	// B
+}
+```
+
+# struct(埋め込み)
+
+```main.go
+package main
+
+import "fmt"
+
+// struct
+// 埋め込み
+
+// Tの構造体にUserを埋め込むことができる
+type T struct {
+	User
+}
+
+type User struct {
+	Name string
+	Age int
+	// X, Y int
+}
+
+func (u *User) SetName() {
+	u.Name = "A"
+}
+
+func main() {
+	t := T{User: User{Name: "user1", Age: 20}}
+	fmt.Println(t)
+	// {{user1 20}}
+
+	fmt.Println(t.User)
+	// {user1 20}
+
+	// TにUserのみで型名を省略した場合のみアクセス可能
+	fmt.Println(t.Name)
+	// user1
+
+	t.SetName()
+	fmt.Println(t)
+	// {{A 20}}
+}
+```
+
+# struct(コントラクト)
+
+```mainb.go
+package main
+
+import "fmt"
+
+// struct
+// コントラクト
+
+type User struct {
+	Name string
+	Age int
+	// X, Y int
+}
+
+func NewUser(name string, age int) *User {
+	return &User{
+		Name: name,
+		Age: age,
+	}
+}
+
+func main() {
+	user1 := NewUser("user1", 20)
+	fmt.Println(user1)
+	// &{user1 20}
+
+	// 実態にアクセスする
+	fmt.Println(*user1)
+	// {user1 20}
+}
+```
+
+# struct(スライス)
+
+```main.go
+package main
+
+import "fmt"
+
+// struct
+// コントラクト
+
+type User struct {
+	Name string
+	Age int
+	// X, Y int
+}
+
+type Users []*User
+
+/*
+type Users struct {
+	Users []*User
+}
+*/
+
+
+func main() {
+	user1 := User{
+		Name: "user1",
+		Age: 10,
+	}
+
+	user2 := User{
+		Name: "user2",
+		Age: 20,
+	}
+
+	user3 := User{
+		Name: "user3",
+		Age: 30,
+	}
+
+	user4 := User{
+		Name: "user4",
+		Age: 40,
+	}
+
+	users := Users{}
+	users = append(users, &user1, &user2, &user3, &user4)
+	fmt.Println(users)
+	// [0xc00000c030 ...]
+
+	for _, u := range users {
+		fmt.Println(*u)
+	}
+	// {user1 10}
+	// {user2 20}
+	// {user3 30}
+	// {user4 40}
+
+	users2 := make([]*User, 0)
+	users2 = append(users2, &user1, &user2, &user3, &user4)
+
+	for _, u := range users2 {
+		fmt.Println(*u)
+	// {user1 10}
+	// {user2 20}
+	// {user3 30}
+	// {user4 40}
+	}
+}
+```
+
+# struct(マップ)
+
+```main.go
+package main
+
+import "fmt"
+
+// struct
+// map
+
+type User struct {
+	Name string
+	Age int
+	// X, Y int
+}
+
+
+func main() {
+	m := map[int]User{
+		1: {
+			Name: "user1",
+			Age: 20,
+		},
+		2: {
+			Name: "user2",
+			Age: 30,
+		},
+
+	}
+	fmt.Println(m)
+	// map[1:{user1 20} 2:{user2 30}]
+
+	m2 := map[User]string{
+		{Name: "user1", Age: 20}: "Tokyo",
+		{Name: "user2", Age: 30}: "Osaka",
+	}
+	fmt.Println(m2)
+	// map[{user1 20}:Tokyo {user2 30}:Osaka]
+
+	m3 := make(map[int]User)
+	fmt.Println(m3)
+	// map[]
+
+	m3[1] = User{Name: "user3"}
+	fmt.Println(m3)
+	// map[1:{user3}]
+
+	for _, v := range m {
+		fmt.Println(v)
+		// {user1 20}
+		// {user2 30}
+	}
+
+}
+```
+
+# struct(独自型)
+
+```main.go
+package main
+
+import "fmt"
+
+// struct
+// 独自型
+
+type MyInt int
+
+func (mi MyInt) Print() {
+	fmt.Println(mi)
+}
+
+func main() {
+	var mi MyInt
+	mi = 10
+	fmt.Println(mi)
+	// 10
+	fmt.Printf("%T\n", mi)
+	// main.MyInt
+
+	// i := 100
+	// fmt.Println(mi + i)
+	// error
+
+	mi.Print()
+	// 10
+
+}
+```
