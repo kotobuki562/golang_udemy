@@ -2628,10 +2628,102 @@ is not in GOROOT
 
 ターミナルで実行してみてください。
 
+```
 go mod init
 
 go mod tidy
+```
 
 下記記事が参考になるかと思います。
 
 https://qiita.com/taku-yamamoto22/items/4d6f9ff8451a0b86997b
+
+# スコープ&パブリック&プライベート
+
+package の mod の初期設定
+
+```
+go mod init
+
+go mod tidy
+```
+
+```main.go
+package main
+
+//
+import (
+	// 通常のパッケージ宣言
+	"fmt"
+	// 名前空間を指定したパッケージ宣言
+	// あまり水晶はされていない
+	. "fmt"
+	// 名前を指定してパッケージ宣言
+	f "fmt"
+
+	// gopathはいかになければエラーになる
+	"golang_udemy/lesson5/public/foo"
+)
+
+// スコープ
+
+func appName() string {
+	const appName = "GoApp"
+	var Version string = "1.0"
+	return appName + " " + Version
+}
+
+// string型のbを返す
+func Do(s string) (b string) {
+	// これだとスコープhが重複する
+	// var b string = s
+	b = s
+	{
+		b := "BBBB"
+		f.Println(b)
+		// BBBB
+	}
+	f.Println(b)
+	// Hello
+	return b
+}
+
+func main() {
+	f.Println(foo.Max)
+	// 1
+
+	// fmt.Println(foo.min)
+	// cannot refer to unexported name foo.min
+
+	// 関数を呼び出しているのでminも参照可能
+	fmt.Println(foo.ReturnMin())
+	// 1
+
+	Println(foo.Max)
+
+	fmt.Println(appName())
+	// GoApp 1.0
+
+	// f.Println(AppName, Version)
+	// ./main.go:41:12: undefined: AppName
+  // ./main.go:41:21: undefined: Version
+
+	f.Println(Do("Hello"))
+	// error
+}
+```
+
+```foo/foo.go
+package foo
+
+const (
+	// 頭文字が大文字だと外部でも参照が可能
+	Max = 100
+	// 小文字だと外部からの参照ができない
+	min = 1
+)
+
+func ReturnMin() int {
+	return min
+}
+```
