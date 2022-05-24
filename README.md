@@ -2588,5 +2588,50 @@ func main() {
 # interface(Stringer)
 
 ```main.go
+package main
 
+import "fmt"
+
+// interface
+// fmt.Stringer
+
+/*
+type Stringer interface {
+	String() string
+}
+*/
+
+type Point struct {
+	A int
+	B string
+}
+
+func (p *Point) String() string {
+	return fmt.Sprintf("<<%v, %v>>", p.A, p.B)
+}
+
+func main() {
+	p := &Point{100, "ABC"}
+	fmt.Println(p)
+	// <<100, ABC>>
+
+}
 ```
+
+# モジュール管理の補足
+
+次のレクチャーでの、パッケージを import して実行した際に
+
+is not in GOROOT
+
+表題のエラーが出てしまい、他のフォルダから変数の参照ができない場合。
+
+ターミナルで実行してみてください。
+
+go mod init
+
+go mod tidy
+
+下記記事が参考になるかと思います。
+
+https://qiita.com/taku-yamamoto22/items/4d6f9ff8451a0b86997b
