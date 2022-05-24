@@ -2638,7 +2638,7 @@ go mod tidy
 
 https://qiita.com/taku-yamamoto22/items/4d6f9ff8451a0b86997b
 
-# スコープ&パブリック&プライベート
+# モジュール&スコープ&パブリック&プライベート
 
 package の mod の初期設定
 
@@ -2727,3 +2727,7 @@ func ReturnMin() int {
 	return min
 }
 ```
+
+# テスト
+
+lesson5/test を参照
